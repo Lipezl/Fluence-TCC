@@ -21,6 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({ secret: 'secreto', resave: false, saveUninitialized: false }));
 
-app.use('/', authRoutes);
+app.use('/', routes);
+app.use(authRoutes);
 
 export default app;

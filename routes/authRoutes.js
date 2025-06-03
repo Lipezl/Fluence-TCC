@@ -4,7 +4,15 @@ import { users } from '../data/users.js';
 
 const router = express.Router();
 
-router.post('/cadastrar', cadastrar);
+router.get('/cadastro', (req, res)=>{
+  res.render('cadastro');
+});
+router.post('/cadastro', cadastrar);
+
+router.get('/login', (req, res)=>{
+  res.render('login');
+});
+
 router.post('/login', login);
 
 router.get('/users', (req, res) => {

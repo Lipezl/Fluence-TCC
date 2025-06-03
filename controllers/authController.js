@@ -1,8 +1,8 @@
 import { users } from '../data/users.js';
 
 export function cadastrar(req, res) {
-    const { nome, senha, email, nivelEscolaridade, dataNascimento } = req.body;
-    if (!nome || !senha || !email || !nivelEscolaridade || !dataNascimento) {
+    const { nome, senha, email, escolaridade, dataNascimento } = req.body;
+    if (!nome || !senha || !email || !escolaridade || !dataNascimento) {
         return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
     };
     if (users.find(user => user.email === email)) {
@@ -13,7 +13,7 @@ export function cadastrar(req, res) {
         nome,
         senha,
         email,
-        nivelEscolaridade,
+        escolaridade,
         dataNascimento
     };
     users.push(newUser);
@@ -21,10 +21,15 @@ export function cadastrar(req, res) {
 }
 
 export function login(req, res) {
-  const { username, password } = req.body;
+  const { email, senha } = req.body;
 
-  const user = users.find(u => u.username === username && u.password === password);
-  if (!user) return res.status(401).json({ message: 'Credenciais inválidas.' });
+  const user = users.find(u => u.email === email && u.senha === senha);
 
-  return res.json({ message: 'Login bem-sucedido!' });
+  if (!user) {
+    return res.render('login', {
+      loginValido: false
+    });
+  }
+
+  return res.redirect('/');
 }

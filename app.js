@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import routes from './routes/index.js';
 import session from 'express-session';
 import authRoutes from './routes/authRoutes.js';
+import textosRoutes from './routes/admin/textosRoutes.js';
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.use(session({ secret: 'secreto', resave: false, saveUninitialized: false }))
 
 app.use('/', routes);
 app.use(authRoutes);
+app.use(textosRoutes);
 
 export default app;

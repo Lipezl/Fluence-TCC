@@ -43,9 +43,10 @@ export function deletarTexto(req, res){
     const { id } = req.params;
 
     const textoIndex = textos.findIndex(texto => texto.id === parseInt(id));
-    if (!textoIndex) {
+    if (textoIndex === -1) {
         return res.status(404).json({ message: 'Texto não encontrado.' });
     }
+
     textos.splice(textoIndex, 1);
     return res.status(200).json({ message: 'Texto deletado com sucesso!' });
 }

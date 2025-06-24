@@ -36,7 +36,8 @@ export function realizarTeste(req, res){
 
 export function historicoUsuario(req, res){
     const userId = parseInt(req.params.userId);
-    const historico = testes.filter(t => t.usarId === userId);
+   const historico = testes.filter(t => t.userId === userId);
+
     if (historico.length === 0) {
         return res.status(404).json({ message: 'Nenhum teste encontrado para este usuário.' });
     }

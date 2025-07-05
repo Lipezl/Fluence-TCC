@@ -107,3 +107,9 @@ button[type="reset"] {
     max-width: 80%;
     height: auto;
 }
+
+
+#gmail{
+    position: relative;
+    top: 5px;
+}

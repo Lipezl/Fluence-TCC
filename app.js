@@ -6,6 +6,8 @@ import session from 'express-session';
 import authRoutes from './routes/authRoutes.js';
 import textosRoutes from './routes/admin/textosRoutes.js';
 import testeRoutes from './routes/testeRoutes.js';
+import { connectDB } from './config/db.js';
+
 
 const app = express();
 
@@ -22,7 +24,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({ secret: 'secreto', resave: false, saveUninitialized: false }));
-
+connectDB();
 app.use('/', routes);
 app.use(authRoutes);
 app.use(textosRoutes);

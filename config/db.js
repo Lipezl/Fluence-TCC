@@ -1,17 +1,42 @@
-import mongoose from 'mongoose';
+import mysql from 'mysql';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
-export async function connectDB (){
-    try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+const dbConfig = {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+};
+
+const databaseName = process.env.DB_NAME;
+
+function createDatabaseIfNotExists(connection) {
+    connection.query(`CREATE DATABASE IF NOT EXISTS \`${databaseName}\``, (err) => {
+        if (err) {
+            console.error('Erro ao tentar criar o banco de dados:', err.stack);
+            return;
+        }
+        console.log(`Banco de dados '${databaseName}' garantido.`);
+        
+        connection.changeUser({ database: databaseName }, (err) => {
+            if (err) {
+                console.error('Erro ao alterar para o banco de dados:', err.stack);
+                return;
+            }
+            console.log(`Conectado ao banco de dados '${databaseName}'`);
         });
-        console.log('Conectado ao banco de dados');
-    } catch (error) {
-        console.error('Erro ao conectar ao banco de dados:', error);
-        process.exit(1);
-    }
+    });
 }
+
+const connection = mysql.createConnection(dbConfig);
+
+connection.connect((err) => {
+    if (err) {
+        console.error('Erro ao conectar ao MySQL:', err.stack);
+        return;
+    }
+    console.log('Conectado ao MySQL.');
+    createDatabaseIfNotExists(connection);
+});
+
+export default connection;

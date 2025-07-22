@@ -16,10 +16,13 @@ router.get('/login', (req, res)=>{
 router.post('/login', login);
 
 router.get('/users', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'Lista completa de usuários cadastrados',
-    data: users
+  User.findAll((err, users) => {
+    if (err) return res.status(500).json({ message: 'Erro ao buscar usuários' });
+    res.status(200).json({
+      status: 'ok',
+      message: 'Lista completa de usuários cadastrados',
+      data: users
+    });
   });
 });
 

@@ -13,7 +13,7 @@ function createTexto(texto, callback) {
     INSERT INTO textos_leitura (titulo, conteudo, criado_em)
     VALUES (?, ?, NOW())
   `;
-  db.query(query, [titulo, conteudo, autorId], (err, result) => {
+  db.query(query, [titulo, conteudo], (err, result) => {
     if (err) return callback(err);
     callback(null, { id: result.insertId, ...texto });
   });

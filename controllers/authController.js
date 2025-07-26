@@ -32,3 +32,13 @@ export function login(req, res) {
     return res.redirect('/');
   });
 };
+
+export function listarUsuarios(req, res) {
+  User.findAll((err, usuarios) => {
+    if (err) return res.status(500).json({ message: 'Erro ao buscar usuários.' });
+    if (!usuarios || usuarios.length === 0) {
+      return res.status(404).json({ message: 'Nenhum usuário encontrado.' });
+    }
+    return res.status(200).json({ status: 'ok', message: 'Lista de usuários', usuarios });
+  });
+}

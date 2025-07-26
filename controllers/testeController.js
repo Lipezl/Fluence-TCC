@@ -1,49 +1,55 @@
-import { testes } from '../data/testes.js';
-import { textos } from '../data/textos.js';
+import TesteModel from '../models/TesteModel.js';
 
-export function sortearTexto(req, res){
-    const userid = parseInt(req.params.userId);
-    const feitos = testes.filter(t => t.userId === userid).map(t => t.textoId);
-    const textosDisponiveis = textos.filter(t => !feitos.includes(t.id));
-
-    if (textosDisponiveis.length === 0){
-        return res.status(200).json({message: 'Todos os textos já foram realizados por este usuário.'});
+export function iniciarTeste(req, res) {
+    const userId = parseInt(req.params.userId);
+    if (!userId) {
+        return res.status(400).json({ message: 'ID do usuário é obrigatório.' });
     }
-    const textoSorteado = textosDisponiveis(Math.floor(Math.random()*textosDisponiveis.length));
-    return res.status(200).json({
-        message: 'Texto sorteado com sucesso.',
-        texto: textoSorteado
+    TesteModel.sortearTextoParaUsuario(userId, (err, textoSorteado) => {
+        if (err) return res.status(500).json({ message: 'Erro ao sortear texto.' });
+        if (!textoSorteado) {
+            return res.status(200).json({ message: 'Todos os textos já foram realizados por este usuário.' });
+        }
+        return res.status(200).json({
+            message: 'Texto sorteado para o teste.',
+            texto: textoSorteado
+        });
     });
 }
 
-export function realizarTeste(req, res){
-    const { userId, textoId, audioUrl, resultado, feedback} = req.body;
-    if (!userId || !textoId || !audioUrl || !resultado) {
-        return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
+export function realizarTeste(req, res) {
+    const { userId, textoId, resultado, feedback } = req.body;
+    if (!userId || !textoId || !resultado) {
+        return res.status(400).json({ message: 'Todos os campos obrigatórios.' });
     }
-    const novoTeste = {
-        id: testes.length + 1,
-        userId: parseInt(userId),
-        textoId: parseInt(textoId),
-        data: new Date().toISOString(),
-        audioUrl,
+    const teste = {
+        userId,
+        textoId,
         resultado,
         feedback
     };
-    testes.push(novoTeste);
-    return res.status(201).json({ message: 'Teste realizado com sucesso!', teste: novoTeste });
+    TesteModel.salvarTeste(teste, (err, novoTeste) => {
+        if (err) return res.status(500).json({ message: 'Erro ao salvar teste.' });
+        return res.status(201).json({ message: 'Teste realizado com sucesso!', teste: novoTeste });
+    });
 }
 
-export function historicoUsuario(req, res){
+export function historicoUsuario(req, res) {
     const userId = parseInt(req.params.userId);
-   const historico = testes.filter(t => t.userId === userId);
+    TesteModel.listarTestesPorUsuario(userId, (err, testes) => {
+        if (err) return res.status(500).json({ message: 'Erro ao buscar histórico.' });
+        if (!testes || testes.length === 0) {
+            return res.status(404).json({ message: 'Nenhum teste encontrado para este usuário.' });
+        }
+        return res.status(200).json({ status: 'ok', message: 'Histórico de testes do usuário', testes });
+    });
+}
 
-    if (historico.length === 0) {
-        return res.status(404).json({ message: 'Nenhum teste encontrado para este usuário.' });
-    }
-    return res.status(200).json({
-        status: 'ok',
-        message: 'Histórico de testes do usuário',
-        testes: historico
+export function detalhesTeste(req, res) {
+    const testeId = parseInt(req.params.testeId);
+    TesteModel.buscarDetalhesTeste(testeId, (err, detalhes) => {
+        if (err) return res.status(500).json({ message: 'Erro ao buscar detalhes do teste.' });
+        if (!detalhes) return res.status(404).json({ message: 'Teste não encontrado.' });
+        return res.status(200).json({ status: 'ok', detalhes });
     });
 }

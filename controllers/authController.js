@@ -1,4 +1,5 @@
 import User from '../models/UserModel.js';
+import bcrypt from 'bcrypt';
 
 export function cadastrar(req, res) {
   const { nome, senha, email, escolaridade, dataNascimento } = req.body;
@@ -24,14 +25,23 @@ export function login(req, res) {
   const { email, senha } = req.body;
 
   User.findByEmail(email, (err, user) => {
-    if (err) return res.status(500).render('login', { loginValido: false });
-    if (!user || user.senha !== senha) {
+    if (err) {
+      return res.status(500).render('login', { loginValido: false });
+    }
+
+    if (!user) {
       return res.render('login', { loginValido: false });
     }
 
-    return res.redirect('/');
+    bcrypt.compare(senha, user.senha, (err, isMatch) => {
+      if (err || !isMatch) {
+        return res.render('login', { loginValido: false });
+      }
+
+      return res.redirect('/');
+    });
   });
-};
+}
 
 export function listarUsuarios(req, res) {
   User.findAll((err, usuarios) => {

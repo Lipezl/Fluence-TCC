@@ -5,14 +5,19 @@ export function iniciarTeste(req, res) {
     if (!userId) {
         return res.status(400).json({ message: 'ID do usuário é obrigatório.' });
     }
+
     TesteModel.sortearTextoParaUsuario(userId, (err, textoSorteado) => {
-        if (err) return res.status(500).json({ message: 'Erro ao sortear texto.' });
+        if (err) {
+            return res.status(500).json({ message: 'Erro ao sortear texto.' });
+        }
         if (!textoSorteado) {
             return res.status(200).json({ message: 'Todos os textos já foram realizados por este usuário.' });
         }
-        return res.status(200).json({
-            message: 'Texto sorteado para o teste.',
-            texto: textoSorteado
+
+        // Renderiza a view 'teste.ejs' passando os dados necessários
+        return res.render('teste', {
+            user: { id: userId },
+            teste: textoSorteado
         });
     });
 }

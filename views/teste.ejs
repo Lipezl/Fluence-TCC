@@ -1,0 +1,70 @@
+<%- include('partials/header') %>
+<div class="container">
+  <h1><%= teste.titulo %></h1>
+  <p class="instrucao">Pressione o botão e leia a frase em voz alta</p>
+
+  <div class="frase">
+    <%= teste.texto %>
+  </div>
+
+  <div class="microfone">
+    <button id="btnMic">🎤</button>
+    <p id="status">Pressione para começar</p>
+  </div>
+
+  <p id="resultado"></p>
+</div>
+
+<script>
+  const btnMic = document.getElementById("btnMic");
+  const statusEl = document.getElementById("status");
+  const resultadoEl = document.getElementById("resultado");
+
+  // Configuração do reconhecimento de voz
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.lang = "pt-BR";
+  recognition.interimResults = false;
+
+  btnMic.addEventListener("click", () => {
+    recognition.start();
+    btnMic.disabled = true;
+    statusEl.innerText = "Ouvindo...";
+  });
+
+  recognition.onresult = (event) => {
+    const texto = event.results[0][0].transcript;
+    resultadoEl.innerText = "Você disse: " + texto;
+    statusEl.innerText = "Concluído ✅";
+    btnMic.disabled = false;
+
+fetch("/realizarTeste", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    userId: "<%= user.id %>",
+    textoId: "<%= teste.id %>",
+    resultado: texto,
+    feedback: ""
+  })
+})
+    .then(res => res.json())
+    .then(data => console.log("Salvo:", data))
+    .catch(err => console.error("Erro ao salvar:", err));
+  };
+
+  recognition.onerror = (event) => {
+    statusEl.innerText = "Erro: " + event.error;
+    btnMic.disabled = false;
+  };
+
+  recognition.onend = () => {
+    if (btnMic.disabled) {
+      btnMic.disabled = false;
+      statusEl.innerText = "Pressione para tentar novamente";
+    }
+  };
+</script>
+<%- include('partials/footer') %>
+</body>
+</html>

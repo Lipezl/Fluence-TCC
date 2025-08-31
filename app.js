@@ -26,6 +26,6 @@ app.use(session({ secret: 'secreto', resave: false, saveUninitialized: false }))
 app.use('/', routes);
 app.use(authRoutes);
 app.use(textosRoutes);
-app.use('/teste', testeRoutes);
+app.use(testeRoutes);
 
 export default app;

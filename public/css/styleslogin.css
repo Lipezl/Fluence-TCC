@@ -67,7 +67,7 @@ body{
     margin-right: 10%;
 }
 
-form {
+.formCadastro {
     width: 55vw; /* 55% da largura da viewport */
     min-width: 320px;
     max-width: 600px;

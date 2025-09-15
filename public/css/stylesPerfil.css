@@ -1,0 +1,72 @@
+* {
+  font-family: sans-serif;
+}
+
+body {
+  background-color: #ffdad0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.nav-link {
+  margin: 0 10px;
+  border-radius: 8px;
+  font-size: 18px;
+}
+
+.nav-link:hover {
+  background-color: #ffb3a7;
+  transform: scale(1.25);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.nav-link:active {
+  background-color: #ff8c7a;
+  transform: scale(1);
+}
+
+.nav-link:visited {
+  color: #ff4d4d;
+}
+
+.nav-link:focus {
+  outline: none;
+  box-shadow: 0 0 5px #ff4d4d;
+}
+
+#gmail {
+  position: relative;
+  top: 5px;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
+  margin-top: auto;
+}
+
+/* Avatar Placeholder */
+.avatar-placeholder {
+  position: absolute;
+  left: 14.77%;
+  right: 14.77%;
+  top: 25%;
+  bottom: 10.92%;
+  background: #4f378a; /* M3/sys/light/on-primary-container */
+}
+
+.nome-usuario {
+  position: absolute;
+  width: 241px;
+  height: 110px;
+  left: 154px;
+  top: 612px;
+  padding-top: 3%;
+  font-weight: 400;
+  font-size: 230%;
+  color: #000000;
+}

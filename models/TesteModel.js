@@ -1,14 +1,16 @@
 import db from '../config/db.js';
 
 function salvarTeste(teste, callback){
-    const {userId, textoId, data, resultado, feedback} = teste;
+    const {userId, textoId, resultado, feedback, transcricao} = teste;
     const query = `
-    INSERT INTO testes (usuario_id, textos_leitura_id, data, resultado, feedback)
-    VALUES (?, ?, NOW(), ?, ?)
+    INSERT INTO testes (usuario_id, textos_leitura_id, data, resultado, feedback, transcricao)
+    VALUES (?, ?, NOW(), ?, ?, ?)
     `;
-
-    db.query(query, [userId, textoId, data, resultado, feedback], (err, result)=>{
-        if (err) return callback(err);
+    db.query(query, [userId, textoId, resultado, feedback, transcricao], (err, result)=>{
+        if (err) {
+            console.error('Erro ao salvar teste:', err);
+            return callback(err);
+        }
         callback(null, { id: result.insertId, ...teste });
     });
 }

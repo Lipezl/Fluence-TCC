@@ -1,87 +1,127 @@
 <%- include('partials/header') %>
-<div class="container">
-  <h1><%= teste.titulo %></h1>
-
-  <div class="frase">
-    <%= teste.conteudo %>
+<div class="Meus teste">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1 class="text-center mt-5" style="color: #da2e2e;"><strong>Teste de Desempenho</strong></h1><hr><br>
+      </div>
+      <div class="text-center col-md-12" id="instrucoes">
+        <h3 style="color: #da2e2e;"><strong>Instruções:</strong></h3>
+        <ul style="color: black; font-size: 18px;">
+          <li class="text-center">Leia o texto em voz alta com clareza e fluência.</li>
+          <li class="text-center">Tente manter um ritmo constante durante a leitura.</li>
+          <li class="text-center">Não se preocupe com erros, apenas faça o seu melhor!</li>
+        </ul>
+        <button id="startButton" class="btn btn-primary mt-3" onclick="mostrarSecao()">Iniciar Teste</button><br>
+      </div>
+      <div class="text-center col-md-12" id="textoTeste" style="display:none;">
+        <h2 style="color:#da2e2e;"><%= teste.titulo %></h2>
+        <div style="background:#fff4de; border-radius:10px; padding:20px; margin:20px auto; max-width:600px;">
+          <%= teste.conteudo %>
+        </div>
+      </div>
+      <div class="text-center teste-microfone" id="secaoOculta">
+        <br><audio id="audio" controls style="display: none;"></audio>
+        <button class="microfone">
+          <img src="/img/mic.png" alt="Microfone"/>
+        </button><br><br>
+        <button id="stopButton" class="btn btn-secondary mt-3" disabled>Parar</button>
+      </div>
+    </div>
   </div>
-
-  <div class="microfone">
-    <button id="btnMic">🎤</button>
-    <p id="status">Pressione para começar</p>
-  </div>
-
-  <p id="resultado"></p>
 </div>
-
 <script>
-  const btnMic = document.getElementById("btnMic");
-  const statusEl = document.getElementById("status");
-  const resultadoEl = document.getElementById("resultado");
+  const startButton = document.getElementById('startButton');
+  const secaoOculta = document.getElementById('secaoOculta');
+  const micButton = document.querySelector('.microfone');
+  const stopButton = document.getElementById('stopButton');
+  const audio = document.getElementById('audio');
+  const instrucoes = document.getElementById('instrucoes');
+  const textoTeste = document.getElementById('textoTeste');
 
-  // Configuração do reconhecimento de voz
+  // Esconde a seção do microfone e o texto inicialmente
+  secaoOculta.style.display = 'none';
+  textoTeste.style.display = 'none';
+
+  // Mostra a seção do microfone, o texto e esconde o botão de iniciar e instruções
+  function mostrarSecao() {
+    startButton.style.display = 'none';
+    instrucoes.style.display = 'none';
+    textoTeste.style.display = 'block';
+    secaoOculta.style.display = 'block';
+    micButton.style.display = 'inline-block';
+    stopButton.disabled = false;
+  }
+
+  // Web Speech API
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
   recognition.lang = "pt-BR";
   recognition.interimResults = false;
 
   let ouvindo = false;
-  let forcarParada = false; // Flag para saber se o usuário clicou para parar
+  let forcarParada = false;
 
-  btnMic.addEventListener("click", () => {
+  micButton.addEventListener('click', () => {
     if (!ouvindo) {
       recognition.start();
       ouvindo = true;
-      forcarParada = false;
-      btnMic.innerText = "⏹️"; // muda o ícone para "parar"
-      statusEl.innerText = "Ouvindo...";
+      micButton.querySelector('img').src = "/img/mic-on.png";
+      stopButton.disabled = false;
     } else {
       forcarParada = true;
       recognition.stop();
       ouvindo = false;
-      btnMic.innerText = "🎤"; // volta para o ícone de microfone
-      statusEl.innerText = "Parado";
+      micButton.querySelector('img').src = "/img/mic.png";
+      stopButton.disabled = true;
     }
+  });
+
+  stopButton.addEventListener('click', () => {
+    forcarParada = true;
+    recognition.stop();
+    ouvindo = false;
+    micButton.querySelector('img').src = "/img/mic.png";
+    stopButton.disabled = true;
   });
 
   recognition.onresult = (event) => {
     const texto = event.results[0][0].transcript;
-    resultadoEl.innerText = "Você disse: " + texto;
-    statusEl.innerText = "Concluído ✅";
     ouvindo = false;
-    btnMic.innerText = "🎤";
-
-    // Enviar o resultado para o backend
+    micButton.querySelector('img').src = "/img/mic.png";
+    stopButton.disabled = true;
+    // Envio para backend (descomente se quiser usar)
+    
     fetch("/realizarTeste", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: "<%= user.id %>",
         textoId: "<%= teste.id %>",
-        resultado: texto,
-        feedback: ""
+        resultado: "Ótimo",
+        feedback: "",
+        transcricao: texto
       })
     })
     .then(res => res.json())
     .then(data => console.log("Salvo:", data))
     .catch(err => console.error("Erro ao salvar:", err));
+    
   };
 
   recognition.onerror = (event) => {
-    statusEl.innerText = "Erro: " + event.error;
     ouvindo = false;
-    btnMic.innerText = "🎤";
+    micButton.querySelector('img').src = "/img/mic.png";
+    stopButton.disabled = true;
   };
 
   recognition.onend = () => {
     if (!forcarParada && ouvindo) {
-      // Se não foi o usuário que parou, reinicia automaticamente
       recognition.start();
-      statusEl.innerText = "Ouvindo...";
     } else {
       ouvindo = false;
-      btnMic.innerText = "🎤";
-      statusEl.innerText = "Pressione para tentar novamente";
+      micButton.querySelector('img').src = "/img/mic.png";
+      stopButton.disabled = true;
     }
   };
 </script>

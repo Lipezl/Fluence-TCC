@@ -16,7 +16,7 @@ export function cadastrar(req, res) {
 
     User.createUser({ nome, senha, email, escolaridade, dataNascimento }, (err, newUser) => {
       if (err) return res.status(500).json({ message: 'Erro ao cadastrar usuário.' });
-      return res.status(201).json({ message: 'Usuário cadastrado com sucesso!', user: newUser });
+      return res.redirect('/login');
     });
   });
 };
@@ -38,7 +38,24 @@ export function login(req, res) {
         return res.render('login', { loginValido: false });
       }
 
+      // Salva o id do usuário na sessão
+      req.session.userId = user.id;
+
+      // Redireciona para a tela de home
       return res.redirect('/');
+    });
+  });
+}
+
+export function deleteUser(req, res) {
+  const userId = req.session.userId;
+  if (!userId) {
+    return res.status(401).json({ message: 'Usuário não autenticado.' });
+  }
+  User.deleteUser(userId, (err, result) => {
+    if (err) return res.status(500).json({ message: 'Erro ao deletar usuário.' });
+    req.session.destroy(() => {
+      res.redirect('/login');
     });
   });
 }
@@ -50,5 +67,19 @@ export function listarUsuarios(req, res) {
       return res.status(404).json({ message: 'Nenhum usuário encontrado.' });
     }
     return res.status(200).json({ status: 'ok', message: 'Lista de usuários', usuarios });
+  });
+}
+
+export function perfil(req, res) {
+  const userId = req.session.userId;
+  User.findById(userId, (err, usuario) => {
+    if (err || !usuario) return res.redirect('/login');
+
+    if (usuario.data_nascimento) {
+      const d = new Date(usuario.data_nascimento);
+      usuario.data_nascimento = d.toLocaleDateString('pt-BR');
+    }
+
+    res.render('perfil', { usuario });
   });
 }

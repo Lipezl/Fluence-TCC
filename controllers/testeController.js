@@ -23,7 +23,7 @@ export function iniciarTeste(req, res) {
 }
 
 export function realizarTeste(req, res) {
-    const { userId, textoId, resultado, feedback } = req.body;
+    const { userId, textoId, resultado, feedback, transcricao } = req.body;
     if (!userId || !textoId || !resultado) {
         return res.status(400).json({ message: 'Todos os campos obrigatórios.' });
     }
@@ -31,10 +31,12 @@ export function realizarTeste(req, res) {
         userId,
         textoId,
         resultado,
+        transcricao,
         feedback
     };
     TesteModel.salvarTeste(teste, (err, novoTeste) => {
         if (err) return res.status(500).json({ message: 'Erro ao salvar teste.' });
+        console.log('Teste salvo:', novoTeste); // Mostra no terminal do Node
         return res.status(201).json({ message: 'Teste realizado com sucesso!', teste: novoTeste });
     });
 }

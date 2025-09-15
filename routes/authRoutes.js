@@ -1,5 +1,5 @@
 import express from 'express';
-import { cadastrar, login, listarUsuarios } from '../controllers/authController.js';
+import { cadastrar, login, listarUsuarios, perfil, deleteUser } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -13,7 +13,11 @@ router.get('/login', (req, res) => {
 });
 router.post('/login', login);
 
+router.delete('/perfil/delete', deleteUser)
+
 // Corrigido: agora retorna JSON usando o controller
 router.get('/users', listarUsuarios);
+
+router.get ('/perfil', perfil);
 
 export default router;

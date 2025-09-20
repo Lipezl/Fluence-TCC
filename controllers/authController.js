@@ -83,3 +83,9 @@ export function perfil(req, res) {
     res.render('perfil', { usuario });
   });
 }
+
+export function logout(req, res){
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
+}

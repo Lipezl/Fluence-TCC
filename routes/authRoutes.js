@@ -1,5 +1,5 @@
 import express from 'express';
-import { cadastrar, login, listarUsuarios, perfil, deleteUser } from '../controllers/authController.js';
+import { cadastrar, login, listarUsuarios, perfil, deleteUser, logout } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -20,4 +20,5 @@ router.get('/users', listarUsuarios);
 
 router.get ('/perfil', perfil);
 
+router.post('/logout', logout);
 export default router;

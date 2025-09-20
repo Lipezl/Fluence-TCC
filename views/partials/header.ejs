@@ -40,11 +40,15 @@
                 
               </li> -->
             </ul>
-              <a class="nav-link ms-3" style="color: #da2e2e;" href="cadastro"><strong>Cadastro</strong></a>
-              <a class="nav-link active ms-3" style="color: #da2e2e;" href="login"><strong>Login</strong></a>
-              <a class="nav-link active ms-3" href="perfil">
-                  <img src="/img/Foto de Perfil.png" alt="FotoPerfil" width="31" height="26">
-              </a>            
+              <% if (!user) { %>
+                <a class="nav-link ms-3" style="color: #da2e2e;" href="cadastro"><strong>Cadastro</strong></a>
+                <a class="nav-link active ms-3" style="color: #da2e2e;" href="login"><strong>Login</strong></a>
+              <% } %>
+              <% if (user) { %>
+                <a class="nav-link active ms-3" href="perfil">
+                    <img src="/img/Foto de Perfil.png" alt="FotoPerfil" width="31" height="26">
+                </a>
+              <% } %>
           </div>
         </div>
       </nav>

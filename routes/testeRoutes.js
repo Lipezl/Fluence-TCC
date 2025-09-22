@@ -3,7 +3,7 @@ import { iniciarTeste, realizarTeste, historicoUsuario, detalhesTeste } from '..
 
 const router = express.Router();
 
-router.get('/iniciarTeste/:userId', iniciarTeste);
+router.get('/iniciarTeste', iniciarTeste);
 router.post('/realizarTeste', realizarTeste);
 router.get('/historico/:userId', historicoUsuario);
 router.get('/detalhes/:testeId', detalhesTeste);

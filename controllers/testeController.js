@@ -1,9 +1,9 @@
 import TesteModel from '../models/TesteModel.js';
 
 export function iniciarTeste(req, res) {
-    const userId = parseInt(req.params.userId);
+    const userId = req.session.userId;
     if (!userId) {
-        return res.status(400).json({ message: 'ID do usuário é obrigatório.' });
+        return res.redirect('/login');
     }
 
     TesteModel.sortearTextoParaUsuario(userId, (err, textoSorteado) => {
@@ -13,8 +13,6 @@ export function iniciarTeste(req, res) {
         if (!textoSorteado) {
             return res.status(200).json({ message: 'Todos os textos já foram realizados por este usuário.' });
         }
-
-        // Renderiza a view 'teste.ejs' passando os dados necessários
         return res.render('teste', {
             user: { id: userId },
             teste: textoSorteado

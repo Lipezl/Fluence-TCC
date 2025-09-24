@@ -39,6 +39,10 @@
   const instrucoes = document.getElementById('instrucoes');
   const textoTeste = document.getElementById('textoTeste');
 
+  let mediaRecorder;
+  let chunks = [];
+  let gravacaoAtiva = false;
+
   // Esconde a seção do microfone e o texto inicialmente
   secaoOculta.style.display = 'none';
   textoTeste.style.display = 'none';
@@ -50,81 +54,106 @@
     textoTeste.style.display = 'block';
     secaoOculta.style.display = 'block';
     micButton.style.display = 'inline-block';
-    stopButton.disabled = false;
+    stopButton.disabled = true;
   }
 
-  // Web Speech API
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
-  recognition.lang = "pt-BR";
-  recognition.interimResults = false;
+  // Função para iniciar gravação de áudio
+  function iniciarGravacao() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.start();
+        gravacaoAtiva = true;
+        micButton.querySelector('img').src = "/img/mic-on.png";
+        stopButton.disabled = false;
+        chunks = [];
 
-  let ouvindo = false;
-  let forcarParada = false;
+        mediaRecorder.ondataavailable = e => {
+          chunks.push(e.data);
+        };
 
-  micButton.addEventListener('click', () => {
-    if (!ouvindo) {
-      recognition.start();
-      ouvindo = true;
-      micButton.querySelector('img').src = "/img/mic-on.png";
-      stopButton.disabled = false;
-    } else {
-      forcarParada = true;
-      recognition.stop();
-      ouvindo = false;
+        mediaRecorder.onstop = e => {
+          gravacaoAtiva = false;
+
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          audio.src = URL.createObjectURL(blob);
+          audio.style.display = 'block';
+
+          enviarAudio(blob);
+        };
+      })
+      .catch(err => {
+        alert('Erro ao acessar microfone: ' + err.message);
+      });
+  }
+
+  // Função para parar a gravação
+  function pararGravacao() {
+    if (mediaRecorder && gravacaoAtiva) {
+      mediaRecorder.stop();
       micButton.querySelector('img').src = "/img/mic.png";
       stopButton.disabled = true;
+    }
+  }
+
+  micButton.addEventListener('click', () => {
+    if (!gravacaoAtiva) {
+      iniciarGravacao();
+    } else {
+      pararGravacao();
     }
   });
 
   stopButton.addEventListener('click', () => {
-    forcarParada = true;
-    recognition.stop();
-    ouvindo = false;
-    micButton.querySelector('img').src = "/img/mic.png";
-    stopButton.disabled = true;
+    pararGravacao();
   });
 
-  recognition.onresult = (event) => {
-    const texto = event.results[0][0].transcript;
-    ouvindo = false;
-    micButton.querySelector('img').src = "/img/mic.png";
-    stopButton.disabled = true;
-    // Envio para backend (descomente se quiser usar)
-    
-    fetch("/realizarTeste", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+  // Envia áudio para backend para transcrição
+  function enviarAudio(blob) {
+    const formData = new FormData();
+    formData.append('audio', blob, 'audio.webm');
+
+    fetch('/transcreverAudio', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if(data.transcription) {
+        console.log('Transcrição:', data.transcription);
+        salvarTesteComTranscricao(data.transcription);
+      } else {
+        alert('Erro na transcrição');
+      }
+    })
+    .catch(err => {
+      console.error('Erro no envio do áudio:', err);
+    });
+  }
+
+  // Salva o teste junto com a transcrição retornada
+  function salvarTesteComTranscricao(transcricao) {
+    fetch('/realizarTeste', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: "<%= user.id %>",
         textoId: "<%= teste.id %>",
-        resultado: "Ótimo",
+        resultado: "Ótimo", // Ajuste conforme necessidade
         feedback: "",
-        transcricao: texto
+        transcricao: transcricao
       })
     })
     .then(res => res.json())
-    .then(data => console.log("Salvo:", data))
-    .catch(err => console.error("Erro ao salvar:", err));
-    
-  };
-
-  recognition.onerror = (event) => {
-    ouvindo = false;
-    micButton.querySelector('img').src = "/img/mic.png";
-    stopButton.disabled = true;
-  };
-
-  recognition.onend = () => {
-    if (!forcarParada && ouvindo) {
-      recognition.start();
-    } else {
-      ouvindo = false;
-      micButton.querySelector('img').src = "/img/mic.png";
-      stopButton.disabled = true;
-    }
-  };
+    .then(data => {
+      console.log('Teste salvo:', data);
+      alert('Teste salvo com sucesso!');
+      // Opcional: redirecione ou atualize a página
+    })
+    .catch(err => {
+      console.error('Erro ao salvar teste:', err);
+      alert('Erro ao salvar teste.');
+    });
+  }
 </script>
 <%- include('partials/footer') %>
-</body>
-</html>

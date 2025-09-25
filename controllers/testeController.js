@@ -1,53 +1,48 @@
 import TesteModel from '../models/TesteModel.js';
 import multer from 'multer';
 import fs from 'fs';
-import { initWhisper } from 'whisper-onnx-speech-to-text';
 import path from "path";
-import ffmpeg from "fluent-ffmpeg";
-import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import fetch from 'node-fetch';
+const upload = multer({ dest: 'uploads/' });
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-const upload = multer({ dest: "uploads/" });
-
-// Será necessário arrumar
-function converterParaWav(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    ffmpeg(inputPath)
-      .outputOptions(["-ar 16000", "-ac 1", "-f wav"])
-      .on("end", () => resolve(outputPath))
-      .on("error", err => reject(err))
-      .save(outputPath);
-  });
-}
 
 export const transcreverAudio = [
   upload.single("audio"),
   async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "Arquivo não enviado" });
     const inputPath = req.file.path;
-    const wavPath = path.join(path.dirname(inputPath), "convertido.wav");
 
     try {
-      await converterParaWav(inputPath, wavPath);
+      const audioBuffer = fs.readFileSync(inputPath);
 
-      const whisper = await initWhisper("base");
-      const transcription = await whisper.transcribe(wavPath, "portuguese");
+      const response = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large-v3', {
+        method: 'POST',
+        headers: {
+          'Authorization': `bearer ${process.env.TOKEN}`,
+          'Content-Type': 'audio/wav'
+        },
+        body: audioBuffer
+      });
 
-      whisper.disposeModel();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro da API HuggingFace: ${errorText}`);
+      }
+
+      const data = await response.json();
+      const transcription = data.text || data.transcription || "";
 
       fs.unlinkSync(inputPath);
-      fs.unlinkSync(wavPath);
 
       return res.json({ transcription });
+
     } catch (err) {
       if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-      if (fs.existsSync(wavPath)) fs.unlinkSync(wavPath);
-      console.error(err);
+      console.error('Erro na transcrição HuggingFace:', err);
       return res.status(500).json({ message: "Erro na transcrição", error: err.message });
     }
-  },
+  }
 ];
-
 export function iniciarTeste(req, res) {
   const userId = req.session.userId;
   if (!userId) {

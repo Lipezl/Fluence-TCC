@@ -30,3 +30,5 @@ Thumbs.db
 # Arquivos temporários
 *.tmp
 *.swp
+
+.uploads/

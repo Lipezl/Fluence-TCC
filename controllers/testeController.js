@@ -65,13 +65,14 @@ export function iniciarTeste(req, res) {
 
 export function realizarTeste(req, res) {
   const userId = req.session.userId;
-  const { textoId, resultado, feedback, transcricao } = req.body;
+  const { textoId,nivel, resultado, feedback, transcricao } = req.body;
   if (!userId || !textoId || !resultado) {
     return res.status(400).json({ message: 'Todos os campos obrigatórios.' });
   }
   const teste = {
     userId,
     textoId,
+    nivel,
     resultado,
     transcricao,
     feedback

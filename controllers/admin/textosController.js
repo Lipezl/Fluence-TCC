@@ -8,13 +8,13 @@ export function listarTextos(req, res) {
 }
 
 export function criarTexto(req, res){
-    const { titulo, conteudo, nivel } = req.body;
+    const { conteudo, nivel } = req.body;
 
-    if (!titulo || !conteudo || !nivel) {
+    if (!conteudo || !nivel) {
         return res.status(400).json({ message: 'Título e conteúdo são obrigatórios.' });
     }
 
-    Texto.createTexto({ titulo, conteudo, nivel }, (err, novoTexto) => {
+    Texto.createTexto({ conteudo, nivel }, (err, novoTexto) => {
         if (err) return res.status(500).json({ message: 'Erro ao criar texto.' });
         return res.status(201).json({ message: 'Texto criado com sucesso!', texto: novoTexto });
     });
@@ -22,13 +22,13 @@ export function criarTexto(req, res){
 
 export function editarTexto(req, res){
     const { id } = req.params;
-    const { titulo, conteudo, nivel } = req.body;
+    const {conteudo, nivel } = req.body;
 
-    if (!titulo || !conteudo || !nivel) {
+    if (!conteudo || !nivel) {
         return res.status(400).json({ message: 'Título e conteúdo são obrigatórios.' });
     }
 
-    Texto.updateTexto(id, { titulo, conteudo, nivel }, (err, textoAtualizado) => {
+    Texto.updateTexto(id, { conteudo, nivel }, (err, textoAtualizado) => {
         if (err) return res.status(500).json({ message: 'Erro ao atualizar texto.' });
         return res.status(200).json({ message: 'Texto atualizado com sucesso!', texto: textoAtualizado });
     });

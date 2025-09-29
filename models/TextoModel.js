@@ -8,12 +8,12 @@ function findById(id, callback) {
 }
 
 function createTexto(texto, callback) {
-  const { titulo, conteudo, nivel } = texto;
+  const { conteudo, nivel } = texto;
   const query = `
-    INSERT INTO textos_leitura (titulo, conteudo, nivel, criado_em)
+    INSERT INTO textos_leitura (conteudo, nivel, criado_em)
     VALUES (?, ?, ?, NOW())
   `;
-  db.query(query, [titulo, conteudo, nivel], (err, result) => {
+  db.query(query, [conteudo, nivel], (err, result) => {
     if (err) return callback(err);
     callback(null, { id: result.insertId, ...texto });
   });
@@ -24,13 +24,13 @@ function findAll(callback) {
 }
 
 function updateTexto(id, texto, callback) {
-  const { titulo, conteudo, nivel } = texto;
+  const { conteudo, nivel } = texto;
   const query = `
     UPDATE textos_leitura
-    SET titulo = ?, conteudo = ?, nivel = ?
+    SET conteudo = ?, nivel = ?
     WHERE id = ?
   `;
-  db.query(query, [titulo, conteudo, nivel, id], (err, result) => {
+  db.query(query, [conteudo, nivel, id], (err, result) => {
     if (err) return callback(err);
     callback(null, { id, ...texto });
   });

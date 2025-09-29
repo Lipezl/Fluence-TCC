@@ -1,5 +1,5 @@
 <%- include('partials/header') %>
-<div class="Meus teste">
+<div class="meus-teste">
   <div class="container">
     <div class="row">
       <div class="col-md-12">
@@ -15,7 +15,7 @@
         <button id="startButton" class="btn btn-primary mt-3" onclick="mostrarSecao()">Iniciar Teste</button><br>
       </div>
       <div class="text-center col-md-12" id="textoTeste" style="display:none;">
-        <h2 style="color:#da2e2e;"><%= teste.titulo %></h2>
+        <h2 style="color:#da2e2e;">Frase:</h2>
         <div style="background:#fff4de; border-radius:10px; padding:20px; margin:20px auto; max-width:600px;">
           <%= teste.conteudo %>
         </div>
@@ -130,25 +130,80 @@
       console.error('Erro no envio do áudio:', err);
     });
   }
+  
+  function normalizarTexto(texto){
+    return texto
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[.,!?;:]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
-  // Salva o teste junto com a transcrição retornada
+  function compararPalavras (original, transcrito){
+    const orig = normalizarTexto(original).split(' ');
+    const trans = normalizarTexto(transcrito).split(' ');
+
+    let erradas = [];
+    let faltando = [];
+    let extras = [];
+
+    orig.forEach((palavra, i)=>{
+      if (trans[i] === undefined){
+        faltando.push(palavra);
+      }
+      else if (palavra !== trans[i]){
+        erradas.push({ esperado: palavra, dito: trans[i] });
+      }
+    });
+
+    if (trans.length > orig.length){
+      extras = trans.slice(orig.length);
+    }
+    return { erradas, faltando, extras };
+  }
+
   function salvarTesteComTranscricao(transcricao) {
+    let resultado = "";
+
+    const textoOriginal = normalizarTexto("<%= teste.conteudo %>");
+    const textoTranscrito = transcricao;
+    const comparacao = compararPalavras(textoOriginal, textoTranscrito);
+    if (
+      comparacao.erradas.length === 0 &&
+      comparacao.faltando.length === 0 &&
+      comparacao.extras.length === 0
+    ) {
+      resultado = "Correto";
+    } else {
+      resultado = "Incorreto";
+    }
+
     fetch('/realizarTeste', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: "<%= user.id %>",
         textoId: "<%= teste.id %>",
-        resultado: "Ótimo", // Ajuste conforme necessidade
-        feedback: "",
-        transcricao: transcricao
+        resultado: resultado,
+        feedback: JSON.stringify(comparacao),
+        transcricao: normalizarTexto(transcricao)
       })
     })
     .then(res => res.json())
     .then(data => {
-      console.log('Teste salvo:', data);
-      alert('Teste salvo com sucesso!');
-      // Opcional: redirecione ou atualize a página
+      console.log('Teste salvo com sucesso:', data);
+          let msg = 'Teste salvo com sucesso!\n';
+      if (resultado === "Incorreto") {
+        if (comparacao.erradas.length)
+          msg += `Palavras erradas: ${comparacao.erradas.map(e => `"${e.dito}" (esperado: "${e.esperado}")`).join(', ')}\n`;
+        if (comparacao.faltando.length)
+          msg += `Palavras faltando: ${comparacao.faltando.join(', ')}\n`;
+        if (comparacao.extras.length)
+          msg += `Palavras a mais: ${comparacao.extras.join(', ')}\n`;
+    }
+    alert(msg); 
+      
     })
     .catch(err => {
       console.error('Erro ao salvar teste:', err);

@@ -1,29 +1,78 @@
 <%- include('partials/header') %>
 <head>
-      <link rel='stylesheet' type='text/css' media='screen' href='css/styleslogin.css'>
+    <link rel='stylesheet' type='text/css' media='screen' href='css/stylesPerfil.css'>
+    <style>
+      .main-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 70vh;
+        justify-content: center;
+      }
+      .perfil-card {
+        background-color: #fff4de;
+        padding: 32px 32px 24px 32px;
+        border-radius: 18px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        max-width: 420px;
+        margin: 0 auto;
+      }
+      .perfil-label {
+        color: #da2e2e;
+        margin-bottom: 0;
+        font-weight: bold;
+        font-size: 1.08rem;
+      }
+      .perfil-dado {
+        color: #222;
+        margin-bottom: 18px;
+        margin-top: 2px;
+        font-size: 1.08rem;
+      }
+      .perfil-actions {
+        margin-top: 18px;
+      }
+      @media (max-width: 600px) {
+        .perfil-card {
+          padding: 18px 8px 12px 8px;
+          max-width: 98vw;
+        }
+      }
+    </style>
 </head>
 
 <div class="main-content">
-    <h1 class="text-center mt-5" style="font-size: 350%; color:#da2e2e"><strong>Perfil do Usuário</strong></h1>
-    <div class="container mt-5">
-      <div class="row">
-        <div class="col-md-8 info" style="background-color: #fff4de;">
-          <div class="linha-nome-data">
-            <p class="nome-usuario"><strong>Nome do Usuário:</strong> <%= usuario.nome %></p>
-          </div><br>
-          <p class="data-nascimento-usuario"><strong>Data de Nascimento: </strong> <%= usuario.data_nascimento || usuario.dataNascimento %></p><br>
-          <p class="email-usuario"><strong>Email: </strong> <%= usuario.email %></p><br>
-          <p class="escolaridade-usuario"><strong>Escolaridade: </strong> <%= usuario.escolaridade %></p><br>
-          <p class="nível-usuario"><strong>Nível do Usuário: </strong> <%= usuario.nivel || 'Não informado' %></p><br>
-      <button class="btn btn-primary mt-3">Editar Perfil</button>
-      <form action="/perfil/delete?_method=DELETE" method="POST" style="display:inline;">
-        <button type="submit" class="btn btn-danger mt-3 ms-2">Excluir Conta</button>
-      </form>
-      <form action="/logout" method="POST" style="display:inline;">
-        <button type="submit" class="btn btn-secondary mt-3 ms-2">Sair</button>
-      </form>
+    <h1 class="text-center mt-4 mb-4" style="font-size: 2rem; color:#da2e2e"><strong>Perfil do Usuário</strong></h1>
+    <div class="perfil-card">
+        <div>
+            <div class="perfil-label">Nome do Usuário:</div>
+            <div class="perfil-dado"><%= usuario.nome %></div>
         </div>
-      </div>
-     </div>
-  </div>   
+        <div>
+            <div class="perfil-label">Data de Nascimento:</div>
+            <div class="perfil-dado"><%= usuario.data_nascimento || usuario.dataNascimento %></div>
+        </div>
+        <div>
+            <div class="perfil-label">Email:</div>
+            <div class="perfil-dado"><%= usuario.email %></div>
+        </div>
+        <div>
+            <div class="perfil-label">Escolaridade:</div>
+            <div class="perfil-dado"><%= usuario.escolaridade %></div>
+        </div>
+        <div>
+            <div class="perfil-label">Nível do Usuário:</div>
+            <div class="perfil-dado"><%= usuario.nivel || 'Não informado' %></div>
+        </div>
+        <div class="perfil-actions">
+            <button class="btn btn-primary">Editar Perfil</button>
+            <form action="/perfil/delete?_method=DELETE" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger ms-2">Excluir Conta</button>
+            </form>
+            <form action="/logout" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-secondary ms-2">Sair</button>
+            </form>
+        </div>
+    </div>
+</div>
 <%- include('partials/footer') %>

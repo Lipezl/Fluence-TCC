@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: fluence
 -- ------------------------------------------------------
--- Server version	8.0.43
+-- Server version	8.0.42
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -32,7 +32,7 @@ CREATE TABLE `usuarios` (
   `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'Felipe Silva Mantuani','felipemantuani4@gmail.com','123','2007-10-17','medio','2025-07-22 18:18:04'),(2,'Henrique Costa Prado','henriqueta.123@gmail.com','123456789','2007-11-08','medio','2025-07-30 13:15:22'),(4,'Felipe','felipemantuani@gmail.com','$2b$10$cQg2bX2IgVUsJP4jpcQ2peY7HDLYKU8iAw4fRNxdnyMMVGdwzAsBi','2007-10-17','medio','2025-09-16 17:54:36');
+INSERT INTO `usuarios` VALUES (1,'Felipe Silva Mantuani','felipemantuani4@gmail.com','$2b$10$nXVzT81uld/Pu5/X8vuFVOfT2pii3SNYlqlf74A7yMxead00.SyQy','2007-10-17','medio','2025-09-29 11:10:09');
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-16 14:56:19
+-- Dump completed on 2025-09-29  8:13:32

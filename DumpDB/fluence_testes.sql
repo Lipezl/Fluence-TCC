@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: fluence
 -- ------------------------------------------------------
--- Server version	8.0.43
+-- Server version	8.0.42
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -28,14 +28,14 @@ CREATE TABLE `testes` (
   `textos_leitura_id` int NOT NULL,
   `resultado` text,
   `feedback` text,
-  `transcricoes` text,
   `data` datetime DEFAULT CURRENT_TIMESTAMP,
+  `transcricao` text,
   PRIMARY KEY (`id`),
   KEY `usuario_id` (`usuario_id`),
   KEY `textos_leitura_id` (`textos_leitura_id`),
   CONSTRAINT `testes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `testes_ibfk_2` FOREIGN KEY (`textos_leitura_id`) REFERENCES `textos_leitura` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -56,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-16 14:56:19
+-- Dump completed on 2025-09-29  8:13:31

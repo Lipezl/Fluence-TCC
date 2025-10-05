@@ -9,15 +9,15 @@ function findByEmail(email, callback) {
 }
 
 function createUser(user, callback) {
-  const { nome, senha, email, escolaridade, dataNascimento } = user;
+  const { nome, senha, email, escolaridade, dataNascimento, nivel } = user;
 
   bcrypt.hash(senha, 10).then(senhaHash => {
     const query = `
-      INSERT INTO usuarios (nome, senha, email, escolaridade, data_nascimento, criado_em)
-      VALUES (?, ?, ?, ?, ?, NOW())
+      INSERT INTO usuarios (nome, senha, email, escolaridade, data_nascimento, criado_em, nivel)
+      VALUES (?, ?, ?, ?, ?, NOW(), ?)
     `;
 
-    db.query(query, [nome, senhaHash, email, escolaridade, dataNascimento], (err, result) => {
+    db.query(query, [nome, senhaHash, email, escolaridade, dataNascimento, nivel], (err, result) => {
       if (err) return callback(err);
       callback(null, { id: result.insertId, ...user, senha: undefined });
     });

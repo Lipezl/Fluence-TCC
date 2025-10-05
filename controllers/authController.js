@@ -2,9 +2,9 @@ import User from '../models/UserModel.js';
 import bcrypt from 'bcrypt';
 
 export function cadastrar(req, res) {
-  const { nome, senha, email, escolaridade, dataNascimento } = req.body;
+  const { nome, senha, email, escolaridade, nivel, dataNascimento } = req.body;
 
-  if (!nome || !senha || !email || !escolaridade || !dataNascimento) {
+  if (!nome || !senha || !email || !escolaridade || !dataNascimento || !nivel) {
     return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
   }
 
@@ -14,7 +14,7 @@ export function cadastrar(req, res) {
       return res.status(400).json({ message: 'Email já cadastrado.' });
     }
 
-    User.createUser({ nome, senha, email, escolaridade, dataNascimento }, (err, newUser) => {
+    User.createUser({ nome, senha, email, escolaridade, dataNascimento, nivel }, (err, newUser) => {
       if (err) return res.status(500).json({ message: 'Erro ao cadastrar usuário.' });
       return res.redirect('/login');
     });

@@ -7,6 +7,7 @@ import session from 'express-session';
 import authRoutes from './routes/authRoutes.js';
 import textosRoutes from './routes/admin/textosRoutes.js';
 import testeRoutes from './routes/testeRoutes.js';
+import prompt from './routes/prompt.js';
 import User from './models/UserModel.js';
 
 const app = express();
@@ -44,6 +45,7 @@ app.use((req, res, next) => {
 
 app.use('/', routes);
 app.use(authRoutes);
+app.use(prompt);
 app.use(textosRoutes);
 app.use(testeRoutes);
 

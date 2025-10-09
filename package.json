@@ -10,6 +10,8 @@
   "author": "Felipe Silva Mantuani",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^1.23.0",
+    "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.0.1",
     "ejs": "^3.1.10",

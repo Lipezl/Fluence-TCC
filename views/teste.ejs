@@ -164,7 +164,25 @@
     return { erradas, faltando, extras };
   }
 
-  function salvarTesteComTranscricao(transcricao) {
+  async function obterMotivosPalavrasErradas(palavrasErradas) {
+  // Pega até 3 palavras erradas
+  const palavras = palavrasErradas.slice(0, 3).map(e => e.esperado);
+  const respostas = [];
+
+  for (const palavra of palavras) {
+    const prompt = `Quais são os 3 principais motivos que levam uma criança a errar a palavra "${palavra}" ao ler, dê uma resposta apenas com os motivos, de forma curta?`;
+    const resp = await fetch('/prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await resp.json();
+    respostas.push({ palavra, motivos: data.reply });
+  }
+  return respostas;
+}
+
+  async function salvarTesteComTranscricao(transcricao) {
     let resultado = "";
 
     const textoOriginal = normalizarTexto("<%= teste.conteudo %>");
@@ -193,9 +211,8 @@
       })
     })
     .then(res => res.json())
-    .then(data => {
-      console.log('Teste salvo com sucesso:', data);
-          let msg = 'Teste salvo com sucesso!\n';
+    .then(async data => {
+      let msg = 'Teste salvo com sucesso!\n';
       if (resultado === "Incorreto") {
         if (comparacao.erradas.length)
           msg += `Palavras erradas: ${comparacao.erradas.map(e => `"${e.dito}" (esperado: "${e.esperado}")`).join(', ')}\n`;
@@ -203,9 +220,16 @@
           msg += `Palavras faltando: ${comparacao.faltando.join(', ')}\n`;
         if (comparacao.extras.length)
           msg += `Palavras a mais: ${comparacao.extras.join(', ')}\n`;
-    }
-    alert(msg); 
-      
+
+        // Consulta motivos dos erros ao Gemini
+        if (comparacao.erradas.length) {
+          const motivos = await obterMotivosPalavrasErradas(comparacao.erradas);
+          motivos.forEach(m => {
+            msg += `\nMotivos para errar "${m.palavra}":\n${m.motivos}\n`;
+          });
+        }
+      }
+      alert(msg); 
     })
     .catch(err => {
       console.error('Erro ao salvar teste:', err);

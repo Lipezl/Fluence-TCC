@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.get('/iniciarTeste', iniciarTeste);
 router.post('/realizarTeste', realizarTeste);
-router.get('/historico/:userId', historicoUsuario);
+router.get('/desempenho', historicoUsuario);
 router.get('/detalhes/:testeId', detalhesTeste);
 
 // Nova rota para transcrição de áudio

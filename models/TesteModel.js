@@ -14,17 +14,16 @@ function salvarTeste(teste, callback){
         callback(null, { id: result.insertId, ...teste });
     });
 }
-
 function listarTestesPorUsuario(usuarioId, callback) {
   const query = `
     SELECT 
-      tl.id, 
-      t.titulo, 
-      tl.data_realizacao
-    FROM testes_leitura tl
-    JOIN textos t ON tl.id_texto = t.id
-    WHERE tl.id_usuario = ?
-    ORDER BY tl.data_realizacao DESC
+      t.id,
+      t.data,
+      tl.conteudo AS conteudo
+    FROM testes t
+    LEFT JOIN textos_leitura tl ON t.textos_leitura_id = tl.id
+    WHERE t.usuario_id = ?
+    ORDER BY t.data DESC
   `;
   db.query(query, [usuarioId], (err, results) => {
     if (err) return callback(err);
@@ -32,17 +31,23 @@ function listarTestesPorUsuario(usuarioId, callback) {
   });
 }
 
+
+//Arrumar função (IMPORTANTE)
 function buscarDetalhesTeste(testeId, callback) {
   const query = `
     SELECT 
-      tl.data_realizacao,
-      tl.tempo_leitura,
+      t.data_realizacao,
+      t.resultado,
+      t.feedback,
+      t.transcricao,
+      tl.nivel,
+      tl.conteudo,
       tl.erros,
-      tl.feedback,
-      t.titulo
-    FROM testes_leitura tl
-    JOIN textos t ON tl.id_texto = t.id
-    WHERE tl.id = ?
+      t2.titulo
+    FROM testes t
+    LEFT JOIN textos_leitura tl ON t.textos_leitura_id = tl.id
+    LEFT JOIN textos t2 ON tl.id_texto = t2.id
+    WHERE t.id = ?
   `;
   db.query(query, [testeId], (err, results) => {
     if (err) return callback(err);
@@ -50,7 +55,6 @@ function buscarDetalhesTeste(testeId, callback) {
     callback(null, results[0]);
   });
 }
-
 export function sortearTextoParaUsuario(userId, callback) {
     db.query('SELECT nivel FROM usuarios WHERE id = ?', [userId], (err, results) => {
         if (err) return callback(err);

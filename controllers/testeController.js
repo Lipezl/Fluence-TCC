@@ -85,13 +85,14 @@ export function realizarTeste(req, res) {
 }
 
 export function historicoUsuario(req, res) {
-  const userId = parseInt(req.params.userId);
+  const userId = req.session.userId;
+  if (!userId) {
+    return res.redirect('/login');
+  }
   TesteModel.listarTestesPorUsuario(userId, (err, testes) => {
     if (err) return res.status(500).json({ message: 'Erro ao buscar histórico.' });
-    if (!testes || testes.length === 0) {
-      return res.status(404).json({ message: 'Nenhum teste encontrado para este usuário.' });
-    }
-    return res.status(200).json({ status: 'ok', message: 'Histórico de testes do usuário', testes });
+
+    return res.render('desempenho', { testes });
   });
 }
 

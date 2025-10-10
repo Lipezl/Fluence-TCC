@@ -1,0 +1,20 @@
+<%- include('partials/header') %>
+
+<div class="container">
+  <h1 class="text-center mt-5" style="color: #da2e2e;"><strong>Histórico de Testes</strong></h1>
+  <hr>
+
+  <div class="list-group">
+    <% if (testes.length === 0) { %>
+      <p class="text-center">Nenhum teste realizado ainda.</p>
+    <% } else { %>
+      <% testes.forEach(teste => { %>
+        <div class="list-group-item">
+          Teste ID: <%= teste.id %> Frase: <%=teste.conteudo%> - Data: <%= teste.data.toLocaleDateString() %>
+        </div>
+      <% }); %>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

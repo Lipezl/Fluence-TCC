@@ -1,10 +1,18 @@
 <%- include('partials/header') %>
+
 <div class="meus-teste">
   <div class="container">
     <div class="row">
+
+      <!-- Título -->
       <div class="col-md-12">
-        <h1 class="text-center mt-5" style="color: #da2e2e;"><strong>Teste de Desempenho</strong></h1><hr><br>
+        <h1 class="text-center mt-5" style="color: #da2e2e;">
+          <strong>Teste de Desempenho</strong>
+        </h1>
+        <hr><br>
       </div>
+
+      <!-- Instruções -->
       <div class="text-center col-md-12" id="instrucoes">
         <h3 style="color: #da2e2e;"><strong>Instruções:</strong></h3>
         <ul style="color: black; font-size: 18px;">
@@ -14,6 +22,8 @@
         </ul>
         <button id="startButton" class="btn btn-primary mt-3" onclick="mostrarSecao()">Iniciar Teste</button><br>
       </div>
+
+      <!-- Texto do Teste -->
       <div class="text-center col-md-12" id="textoTeste" style="display:none;">
         <h2 style="color:#da2e2e;">Frase:</h2>
         <h5 style="color:#000000;">Nível: <%= teste.nivel %></h5>
@@ -21,44 +31,52 @@
           <%= teste.conteudo %>
         </div>
       </div>
+
+      <!-- Microfone -->
       <div class="text-center teste-microfone" id="secaoOculta">
-        <br><audio id="audio" controls style="display: none;"></audio>
+        <br>
+        <audio id="audio" controls style="display: none;"></audio>
         <button class="microfone">
           <img src="/img/mic.png" alt="Microfone"/>
-        </button><br><br>
-        <button id="stopButton" class="btn btn-secondary mt-3" disabled>Parar</button>
+        </button>
+        <br><br>
       </div>
+
+      <!-- Resultado -->
+      <div class="resultado text-center" id="resultado" style="margin-top:20px;"></div>
+
     </div>
   </div>
 </div>
+
 <script>
   const startButton = document.getElementById('startButton');
   const secaoOculta = document.getElementById('secaoOculta');
   const micButton = document.querySelector('.microfone');
-  const stopButton = document.getElementById('stopButton');
   const audio = document.getElementById('audio');
   const instrucoes = document.getElementById('instrucoes');
   const textoTeste = document.getElementById('textoTeste');
+  const resultadoDiv = document.getElementById('resultado');
 
   let mediaRecorder;
   let chunks = [];
   let gravacaoAtiva = false;
 
-  // Esconde a seção do microfone e o texto inicialmente
+  // Inicialização
   secaoOculta.style.display = 'none';
   textoTeste.style.display = 'none';
 
-  // Mostra a seção do microfone, o texto e esconde o botão de iniciar e instruções
+  // Mostra a seção de teste
   function mostrarSecao() {
     startButton.style.display = 'none';
     instrucoes.style.display = 'none';
     textoTeste.style.display = 'block';
     secaoOculta.style.display = 'block';
     micButton.style.display = 'inline-block';
-    stopButton.disabled = true;
+    resultadoDiv.innerHTML = '';
   }
 
-  // Função para iniciar gravação de áudio
+  // Iniciar gravação
   function iniciarGravacao() {
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
@@ -66,73 +84,55 @@
         mediaRecorder.start();
         gravacaoAtiva = true;
         micButton.querySelector('img').src = "/img/mic-on.png";
-        stopButton.disabled = false;
         chunks = [];
 
-        mediaRecorder.ondataavailable = e => {
-          chunks.push(e.data);
-        };
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
 
-        mediaRecorder.onstop = e => {
+        mediaRecorder.onstop = () => {
           gravacaoAtiva = false;
-
           const blob = new Blob(chunks, { type: 'audio/webm' });
           audio.src = URL.createObjectURL(blob);
           audio.style.display = 'block';
-
           enviarAudio(blob);
         };
       })
-      .catch(err => {
-        alert('Erro ao acessar microfone: ' + err.message);
-      });
+      .catch(err => alert('Erro ao acessar microfone: ' + err.message));
   }
 
-  // Função para parar a gravação
+  // Parar gravação
   function pararGravacao() {
     if (mediaRecorder && gravacaoAtiva) {
       mediaRecorder.stop();
       micButton.querySelector('img').src = "/img/mic.png";
-      stopButton.disabled = true;
     }
   }
 
+  // Alternar gravação ao clicar
   micButton.addEventListener('click', () => {
-    if (!gravacaoAtiva) {
-      iniciarGravacao();
-    } else {
-      pararGravacao();
-    }
+    if (!gravacaoAtiva) iniciarGravacao();
+    else pararGravacao();
   });
 
-  stopButton.addEventListener('click', () => {
-    pararGravacao();
-  });
-
-  // Envia áudio para backend para transcrição
+  // Enviar áudio para transcrição
   function enviarAudio(blob) {
     const formData = new FormData();
     formData.append('audio', blob, 'audio.webm');
 
-    fetch('/transcreverAudio', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-      if(data.transcription) {
-        console.log('Transcrição:', data.transcription);
-        salvarTesteComTranscricao(data.transcription);
-      } else {
-        alert('Erro na transcrição');
-      }
-    })
-    .catch(err => {
-      console.error('Erro no envio do áudio:', err);
-    });
+    fetch('/transcreverAudio', { method: 'POST', body: formData })
+      .then(res => res.json())
+      .then(data => {
+        if (data.transcription) {
+          console.log('Transcrição:', data.transcription);
+          salvarTesteComTranscricao(data.transcription);
+        } else {
+          alert('Erro na transcrição.');
+        }
+      })
+      .catch(err => console.error('Erro no envio do áudio:', err));
   }
-  
-  function normalizarTexto(texto){
+
+  // Normalização de texto
+  function normalizarTexto(texto) {
     return texto
       .toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -141,61 +141,63 @@
       .trim();
   }
 
-  function compararPalavras (original, transcrito){
+  // Comparação de palavras
+  function compararPalavras(original, transcrito) {
     const orig = normalizarTexto(original).split(' ');
     const trans = normalizarTexto(transcrito).split(' ');
 
-    let erradas = [];
-    let faltando = [];
+    const erradas = [];
+    const faltando = [];
     let extras = [];
 
-    orig.forEach((palavra, i)=>{
-      if (trans[i] === undefined){
-        faltando.push(palavra);
-      }
-      else if (palavra !== trans[i]){
-        erradas.push({ esperado: palavra, dito: trans[i] });
-      }
+    orig.forEach((palavra, i) => {
+      if (trans[i] === undefined) faltando.push(palavra);
+      else if (palavra !== trans[i]) erradas.push({ esperado: palavra, dito: trans[i] });
     });
 
-    if (trans.length > orig.length){
-      extras = trans.slice(orig.length);
-    }
+    if (trans.length > orig.length) extras = trans.slice(orig.length);
+
     return { erradas, faltando, extras };
   }
 
+  // Busca motivos de erros (usando IA no backend)
   async function obterMotivosPalavrasErradas(palavrasErradas) {
-  // Pega até 3 palavras erradas
-  const palavras = palavrasErradas.slice(0, 3).map(e => e.esperado);
-  const respostas = [];
+    const palavras = palavrasErradas.slice(0, 3).map(e => e.esperado);
+    const respostas = [];
 
-  for (const palavra of palavras) {
-    const prompt = `Quais são os 3 principais motivos que levam uma criança a errar a palavra "${palavra}" ao ler, dê uma resposta apenas com os motivos, de forma curta?`;
-    const resp = await fetch('/prompt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
-    });
-    const data = await resp.json();
-    respostas.push({ palavra, motivos: data.reply });
+    for (const palavra of palavras) {
+      const prompt = `Quais são os 3 principais motivos que levam uma criança a errar a palavra "${palavra}" ao ler? Dê uma resposta apenas com os motivos, de forma curta.`;
+
+      const resp = await fetch('/prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await resp.json();
+      respostas.push({ palavra, motivos: data.reply });
+    }
+
+    return respostas;
   }
-  return respostas;
-}
 
+  // Salvar teste com transcrição e resultado
   async function salvarTesteComTranscricao(transcricao) {
-    let resultado = "";
-
     const textoOriginal = normalizarTexto("<%= teste.conteudo %>");
     const textoTranscrito = transcricao;
     const comparacao = compararPalavras(textoOriginal, textoTranscrito);
-    if (
-      comparacao.erradas.length === 0 &&
-      comparacao.faltando.length === 0 &&
-      comparacao.extras.length === 0
-    ) {
-      resultado = "Correto";
-    } else {
-      resultado = "Incorreto";
+
+    const resultado = (comparacao.erradas.length === 0 &&
+                       comparacao.faltando.length === 0 &&
+                       comparacao.extras.length === 0)
+                      ? "Correto" : "Incorreto";
+
+    let feedback = "";
+    if (resultado === "Incorreto" && comparacao.erradas.length) {
+      const motivos = await obterMotivosPalavrasErradas(comparacao.erradas);
+      feedback = motivos
+        .map(m => `Motivos para errar "${m.palavra}":\n${m.motivos}`)
+        .join('\n\n');
     }
 
     fetch('/realizarTeste', {
@@ -205,36 +207,49 @@
         userId: "<%= user.id %>",
         textoId: "<%= teste.id %>",
         nivel: "<%= teste.nivel %>",
-        resultado: resultado,
-        feedback: JSON.stringify(comparacao), //Arrumar para armazenar a resposta do prompt
-        transcricao: normalizarTexto(transcricao)
+        resultado,
+        feedback,
+        transcricao: normalizarTexto(transcricao),
+        palavrasErradas: comparacao.erradas,
+        palavrasFaltando: comparacao.faltando,
+        palavrasExtras: comparacao.extras
       })
     })
     .then(res => res.json())
-    .then(async data => {
-      let msg = 'Teste salvo com sucesso!\n';
-      if (resultado === "Incorreto") {
-        if (comparacao.erradas.length)
-          msg += `Palavras erradas: ${comparacao.erradas.map(e => `"${e.dito}" (esperado: "${e.esperado}")`).join(', ')}\n`;
-        if (comparacao.faltando.length)
-          msg += `Palavras faltando: ${comparacao.faltando.join(', ')}\n`;
-        if (comparacao.extras.length)
-          msg += `Palavras a mais: ${comparacao.extras.join(', ')}\n`;
-
-        // Consulta motivos dos erros ao Gemini
-        if (comparacao.erradas.length) {
-          const motivos = await obterMotivosPalavrasErradas(comparacao.erradas);
-          motivos.forEach(m => {
-            msg += `\nMotivos para errar "${m.palavra}":\n${m.motivos}\n`;
-          });
-        }
-      }
-      alert(msg); 
+    .then(() => {
+      exibirResultado(comparacao, resultado, feedback, transcricao);
     })
     .catch(err => {
       console.error('Erro ao salvar teste:', err);
       alert('Erro ao salvar teste.');
     });
   }
+
+  // Exibir resultado final na tela
+  function exibirResultado(comparacao, resultado, feedback, transcricao) {
+    const isCorreto = resultado === "Correto";
+    resultadoDiv.innerHTML = `
+      <div style="background: ${isCorreto ? 'linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%)' : 'linear-gradient(135deg, #fce4e4 0%, #f8d7da 100%)'}; border-radius: 20px; padding: 40px; margin: 40px auto; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 3px solid ${isCorreto ? '#28a745' : '#dc3545'};">
+        <h3 style="color: #da2e2e; margin-bottom: 30px; font-size: 32px; text-align: center; font-weight: bold;">Resultado do Teste</h3>
+        <div style="text-align: left; font-size: 18px; line-height: 1.6;">
+          <p><strong style="color: #333;">Frase:</strong> <%= teste.conteudo %></p>
+          <p><strong style="color: #333;">Nível:</strong> <%= teste.nivel %></p>
+          <p><strong style="color: #333;">Resultado:</strong> <span style="color: ${isCorreto ? '#28a745' : '#dc3545'}; font-weight: bold;">${resultado}</span></p>
+          <p><strong style="color: #333;">Transcrição:</strong> ${transcricao}</p>
+          <p><strong style="color: #333;">Feedback:</strong><br><pre style="background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); border: 3px solid #e17055; padding: 20px; border-radius: 15px; white-space: pre-wrap; font-weight: bold; color: #d63031; font-family: Arial, sans-serif; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">${feedback || "Nenhum feedback"}</pre></p>
+          ${comparacao.erradas.length > 0 ? `<p><strong style="color: #333;">Palavras erradas:</strong> ${comparacao.erradas.map(e => `"${e.dito}" (esperado: "${e.esperado}")`).join(', ')}</p>` : ''}
+          ${comparacao.faltando.length > 0 ? `<p><strong style="color: #333;">Palavras faltando:</strong> ${comparacao.faltando.join(', ')}</p>` : ''}
+          ${comparacao.extras.length > 0 ? `<p><strong style="color: #333;">Palavras extras:</strong> ${comparacao.extras.join(', ')}</p>` : ''}
+        </div>
+      </div>
+    `;
+
+    // Esconder todas as outras seções
+    document.querySelector('.meus-teste .row .col-md-12:first-child').style.display = 'none'; // Título
+    document.getElementById('instrucoes').style.display = 'none'; // Instruções
+    document.getElementById('textoTeste').style.display = 'none'; // Texto do Teste
+    document.getElementById('secaoOculta').style.display = 'none'; // Microfone
+  }
 </script>
+
 <%- include('partials/footer') %>

@@ -13,14 +13,14 @@
       </div>
 
       <!-- Instruções -->
-      <div class="text-center col-md-12" id="instrucoes">
-        <h3 style="color: #da2e2e;"><strong>Instruções:</strong></h3>
-        <ul style="color: black; font-size: 18px;">
-          <li class="text-center">Leia o texto em voz alta com clareza e fluência.</li>
-          <li class="text-center">Tente manter um ritmo constante durante a leitura.</li>
-          <li class="text-center">Não se preocupe com erros, apenas faça o seu melhor!</li>
+      <div class="text-center col-md-12" id="instrucoes" style="background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%); border: 2px solid #1890ff; border-radius: 15px; padding: 30px; margin: 20px auto; max-width: 600px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">
+        <h3 style="color: #da2e2e; font-size: 28px; margin-bottom: 20px;"><strong>Instruções:</strong></h3>
+        <ul style="color: #333; font-size: 18px; list-style-type: none; padding: 0;">
+          <li style="margin-bottom: 10px;">📖 Leia o texto em voz alta com clareza e fluência.</li>
+          <li style="margin-bottom: 10px;">⏱️ Tente manter um ritmo constante durante a leitura.</li>
+          <li style="margin-bottom: 20px;">😊 Não se preocupe com erros, apenas faça o seu melhor!</li>
         </ul>
-        <button id="startButton" class="btn btn-primary mt-3" onclick="mostrarSecao()">Iniciar Teste</button><br>
+        <button id="startButton" class="btn btn-primary mt-3" style="background: #da2e2e; border: none; border-radius: 10px; padding: 10px 20px; font-size: 18px; font-weight: bold;" onclick="mostrarSecao()">Iniciar Teste</button><br>
       </div>
 
       <!-- Texto do Teste -->
@@ -83,7 +83,7 @@
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.start();
         gravacaoAtiva = true;
-        micButton.querySelector('img').src = "/img/mic-on.png";
+        micButton.querySelector('img').src = "/img/mic.png";
         chunks = [];
 
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
@@ -91,8 +91,6 @@
         mediaRecorder.onstop = () => {
           gravacaoAtiva = false;
           const blob = new Blob(chunks, { type: 'audio/webm' });
-          audio.src = URL.createObjectURL(blob);
-          audio.style.display = 'block';
           enviarAudio(blob);
         };
       })
@@ -166,7 +164,7 @@
     const respostas = [];
 
     for (const palavra of palavras) {
-      const prompt = `Quais são os 3 principais motivos que levam uma criança a errar a palavra "${palavra}" ao ler? Dê uma resposta apenas com os motivos, de forma curta.`;
+      const prompt = `Quais são os 3 principais motivos que levam uma criança a errar a palavra "${palavra}" ao ler? Dê uma resposta apenas com os motivos, de forma curta, e explique de um jeito simples de entender.`;
 
       const resp = await fetch('/prompt', {
         method: 'POST',

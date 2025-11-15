@@ -18,7 +18,7 @@ router.post('/prompt', async (req, res) => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: prompt,
       maxTokens: 200,
     });

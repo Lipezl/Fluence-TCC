@@ -38,9 +38,15 @@
         <audio id="audio" controls style="display: none;"></audio>
         <button class="microfone">
           <img src="/img/mic.png" alt="Microfone"/>
+          <img src="/img/mic-off.png" alt="Microfone Desligado" style="display:none;"/>
         </button>
         <br><br>
       </div>
+      <div id="loading" style="display:none; text-align:center; margin-top: 20px;">
+      <img src="/img/loading.gif" alt="Carregando..." width="80" />
+        <p>Enviando áudio e processando...</p>
+      </div>
+
 
       <!-- Resultado -->
       <div class="resultado text-center" id="resultado" style="margin-top:20px;"></div>
@@ -53,6 +59,8 @@
   const startButton = document.getElementById('startButton');
   const secaoOculta = document.getElementById('secaoOculta');
   const micButton = document.querySelector('.microfone');
+  const micOnImg = micButton.querySelector('img:nth-child(1)');
+  const micOffImg = micButton.querySelector('img:nth-child(2)');
   const audio = document.getElementById('audio');
   const instrucoes = document.getElementById('instrucoes');
   const textoTeste = document.getElementById('textoTeste');
@@ -62,11 +70,9 @@
   let chunks = [];
   let gravacaoAtiva = false;
 
-  // Inicialização
   secaoOculta.style.display = 'none';
   textoTeste.style.display = 'none';
 
-  // Mostra a seção de teste
   function mostrarSecao() {
     startButton.style.display = 'none';
     instrucoes.style.display = 'none';
@@ -75,61 +81,77 @@
     micButton.style.display = 'inline-block';
     resultadoDiv.innerHTML = '';
   }
-
-  // Iniciar gravação
+ 
   function iniciarGravacao() {
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.start();
         gravacaoAtiva = true;
-        micButton.querySelector('img').src = "/img/mic.png";
+        micOnImg.style.display = 'none';
+        micOffImg.style.display = 'inline';
         chunks = [];
-
+        
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
 
         mediaRecorder.onstop = () => {
           gravacaoAtiva = false;
+          micOnImg.style.display = 'inline';
+          micOffImg.style.display = 'none';
           const blob = new Blob(chunks, { type: 'audio/webm' });
           enviarAudio(blob);
         };
       })
-      .catch(err => alert('Erro ao acessar microfone: ' + err.message));
+      .catch(err => {
+        alert('Erro ao acessar microfone: ' + err.message);
+        micOnImg.style.display = 'inline';
+        micOffImg.style.display = 'none';
+      });
   }
 
-  // Parar gravação
-  function pararGravacao() {
-    if (mediaRecorder && gravacaoAtiva) {
-      mediaRecorder.stop();
-      micButton.querySelector('img').src = "/img/mic.png";
-    }
+function pararGravacao() {
+  if (mediaRecorder && gravacaoAtiva) {
+    mediaRecorder.stop();
+    micOnImg.style.display = 'inline';
+    micOffImg.style.display = 'none';
   }
+}
 
-  // Alternar gravação ao clicar
   micButton.addEventListener('click', () => {
     if (!gravacaoAtiva) iniciarGravacao();
     else pararGravacao();
   });
 
-  // Enviar áudio para transcrição
-  function enviarAudio(blob) {
-    const formData = new FormData();
-    formData.append('audio', blob, 'audio.webm');
+function enviarAudio(blob) {
+  const loading = document.getElementById('loading');
+  const micButton = document.querySelector('.microfone');
 
-    fetch('/transcreverAudio', { method: 'POST', body: formData })
-      .then(res => res.json())
-      .then(data => {
-        if (data.transcription) {
-          console.log('Transcrição:', data.transcription);
-          salvarTesteComTranscricao(data.transcription);
-        } else {
-          alert('Erro na transcrição.');
-        }
-      })
-      .catch(err => console.error('Erro no envio do áudio:', err));
-  }
+  loading.style.display = 'block';
+  micButton.style.display = 'none';
 
-  // Normalização de texto
+  const formData = new FormData();
+  formData.append('audio', blob, 'audio.webm');
+
+  fetch('/transcreverAudio', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if (data.transcription) {
+        console.log('Transcrição:', data.transcription);
+        salvarTesteComTranscricao(data.transcription);
+      } else {
+        loading.style.display = 'none';
+        micButton.style.display = 'inline-block';
+        alert('Erro na transcrição.');
+      }
+    })
+    .catch(err => {
+      loading.style.display = 'none';
+      micButton.style.display = 'inline-block';
+      console.error('Erro no envio do áudio:', err);
+      alert('Erro ao enviar áudio.');
+    });
+}
+
   function normalizarTexto(texto) {
     return texto
       .toLowerCase()
@@ -139,7 +161,6 @@
       .trim();
   }
 
-  // Comparação de palavras
   function compararPalavras(original, transcrito) {
     const orig = normalizarTexto(original).split(' ');
     const trans = normalizarTexto(transcrito).split(' ');
@@ -158,13 +179,12 @@
     return { erradas, faltando, extras };
   }
 
-  // Busca motivos de erros (usando IA no backend)
   async function obterMotivosPalavrasErradas(palavrasErradas) {
-    const palavras = palavrasErradas.slice(0, 3).map(e => e.esperado);
+    const pares = palavrasErradas.slice(0, 3);
     const respostas = [];
 
-    for (const palavra of palavras) {
-      const prompt = `Quais são os 3 principais motivos que levam uma criança a errar a palavra "${palavra}" ao ler? Dê uma resposta apenas com os motivos, de forma curta, e explique de um jeito simples de entender.`;
+    for (const p of pares) {
+      const prompt = `A criança leu "${p.dito}" quando o esperado era "${p.esperado}". Quais são os 3 principais motivos que podem levar a esse erro ao ler? Para cada motivo, indique uma sugestão prática e curta para ajudar a criança a corrigir esse erro. Responda em texto simples, sem asteriscos, sem negrito, sem markdown, com frases curtas e fáceis de entender.`;
 
       const resp = await fetch('/prompt', {
         method: 'POST',
@@ -173,13 +193,19 @@
       });
 
       const data = await resp.json();
-      respostas.push({ palavra, motivos: data.reply });
+      let reply = data.reply || data.resposta || '';
+
+      reply = reply.replace(/^\s*[-*+]\s+/gm, '');
+      reply = reply.replace(/\*{1,2}/g, '');
+      reply = reply.replace(/_+/g, '');
+      reply = reply.trim();
+
+      respostas.push({ esperado: p.esperado, dito: p.dito, motivos: reply });
     }
 
     return respostas;
   }
 
-  // Salvar teste com transcrição e resultado
   async function salvarTesteComTranscricao(transcricao) {
     const textoOriginal = normalizarTexto("<%= teste.conteudo %>");
     const textoTranscrito = transcricao;
@@ -193,8 +219,9 @@
     let feedback = "";
     if (resultado === "Incorreto" && comparacao.erradas.length) {
       const motivos = await obterMotivosPalavrasErradas(comparacao.erradas);
+
       feedback = motivos
-        .map(m => `Motivos para errar "${m.palavra}":\n${m.motivos}`)
+        .map(m => `Esperado: "${m.esperado}"  —  Dito: "${m.dito}"\n${m.motivos}`)
         .join('\n\n');
     }
 
@@ -223,8 +250,8 @@
     });
   }
 
-  // Exibir resultado final na tela
   function exibirResultado(comparacao, resultado, feedback, transcricao) {
+    loading.style.display = 'none';
     const isCorreto = resultado === "Correto";
     resultadoDiv.innerHTML = `
       <div style="background: ${isCorreto ? 'linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%)' : 'linear-gradient(135deg, #fce4e4 0%, #f8d7da 100%)'}; border-radius: 20px; padding: 40px; margin: 40px auto; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 3px solid ${isCorreto ? '#28a745' : '#dc3545'};">
@@ -242,11 +269,10 @@
       </div>
     `;
 
-    // Esconder todas as outras seções
-    document.querySelector('.meus-teste .row .col-md-12:first-child').style.display = 'none'; // Título
-    document.getElementById('instrucoes').style.display = 'none'; // Instruções
-    document.getElementById('textoTeste').style.display = 'none'; // Texto do Teste
-    document.getElementById('secaoOculta').style.display = 'none'; // Microfone
+    document.querySelector('.meus-teste .row .col-md-12:first-child').style.display = 'none';
+    document.getElementById('instrucoes').style.display = 'none';
+    document.getElementById('textoTeste').style.display = 'none';
+    document.getElementById('secaoOculta').style.display = 'none';
   }
 </script>
 

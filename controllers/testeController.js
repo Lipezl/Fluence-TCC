@@ -1,10 +1,9 @@
 import TesteModel from '../models/TesteModel.js';
 import multer from 'multer';
 import fs from 'fs';
-import path from "path";
 import fetch from 'node-fetch';
-const upload = multer({ dest: 'uploads/' });
 
+const upload = multer({ dest: 'uploads/' });
 
 export const transcreverAudio = [
   upload.single("audio"),
@@ -15,14 +14,17 @@ export const transcreverAudio = [
     try {
       const audioBuffer = fs.readFileSync(inputPath);
 
-      const response = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large-v3', {
-        method: 'POST',
-        headers: {
-          'Authorization': `bearer ${process.env.TOKEN}`,
-          'Content-Type': 'audio/wav'
-        },
-        body: audioBuffer
-      });
+      const response = await fetch(
+        "https://router.huggingface.co/hf-inference/models/openai/whisper-large-v3",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.TOKEN}`,
+            "Content-Type": req.file.mimetype || "audio/wav",
+          },
+          body: audioBuffer, // ✅ Envia o binário cru
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -30,19 +32,24 @@ export const transcreverAudio = [
       }
 
       const data = await response.json();
-      const transcription = data.text || data.transcription || "";
+      const transcription =
+        data.text || data.transcription || data[0]?.generated_text || "";
 
       fs.unlinkSync(inputPath);
-
       return res.json({ transcription });
 
     } catch (err) {
       if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-      console.error('Erro na transcrição HuggingFace:', err);
-      return res.status(500).json({ message: "Erro na transcrição", error: err.message });
+      console.error("Erro na transcrição HuggingFace:", err);
+      return res
+        .status(500)
+        .json({ message: "Erro na transcrição", error: err.message });
     }
-  }
+  },
 ];
+
+
+// Início do teste
 export function iniciarTeste(req, res) {
   const userId = req.session.userId;
   if (!userId) {
@@ -63,12 +70,15 @@ export function iniciarTeste(req, res) {
   });
 }
 
+// Salvamento do teste
 export function realizarTeste(req, res) {
   const userId = req.session.userId;
-  const { textoId,nivel, resultado, feedback, transcricao } = req.body;
+  const { textoId, nivel, resultado, feedback, transcricao } = req.body;
+
   if (!userId || !textoId || !resultado) {
     return res.status(400).json({ message: 'Todos os campos obrigatórios.' });
   }
+
   const teste = {
     userId,
     textoId,
@@ -77,6 +87,7 @@ export function realizarTeste(req, res) {
     transcricao,
     feedback
   };
+
   TesteModel.salvarTeste(teste, (err, novoTeste) => {
     if (err) return res.status(500).json({ message: 'Erro ao salvar teste.' });
     console.log('Teste salvo:', novoTeste);
@@ -84,11 +95,13 @@ export function realizarTeste(req, res) {
   });
 }
 
+// Histórico de testes
 export function historicoUsuario(req, res) {
   const userId = req.session.userId;
   if (!userId) {
     return res.redirect('/login');
   }
+
   TesteModel.listarTestesPorUsuario(userId, (err, testes) => {
     if (err) return res.status(500).json({ message: 'Erro ao buscar histórico.' });
 
@@ -96,6 +109,7 @@ export function historicoUsuario(req, res) {
   });
 }
 
+// Detalhes de um teste específico
 export function detalhesTeste(req, res) {
   const testeId = parseInt(req.params.testeId);
   TesteModel.buscarDetalhesTeste(testeId, (err, detalhes) => {

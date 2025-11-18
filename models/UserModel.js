@@ -25,9 +25,13 @@ function createUser(user, callback) {
 }
 
 function deleteUser(id, callback){
-  db.query('DELETE FROM usuarios WHERE id = ?', [id], (err, result) => {
+  db.query('DELETE FROM testes WHERE usuario_id = ?', [id], (err) => {
     if (err) return callback(err);
-    callback(null, result);
+    // Após deletar os testes, deletar o usuário
+    db.query('DELETE FROM usuarios WHERE id = ?', [id], (err2, result) => {
+      if (err2) return callback(err2);
+      callback(null, result);
+    });
   });
 }
 
@@ -41,6 +45,8 @@ function findById(id, callback) {
     callback(null, results[0]);
   });
 }
+
+
 export default {
   findByEmail,
   createUser,

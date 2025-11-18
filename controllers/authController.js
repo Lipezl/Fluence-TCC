@@ -89,3 +89,17 @@ export function logout(req, res){
     res.redirect('/login');
   });
 }
+
+export function editarPerfil(req, res) {
+  const userId = req.session.userId;
+  const { nome, email, escolaridade, nivel } = req.body;
+
+  if (!nome || !email || !escolaridade || !nivel) {
+    return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
+  }
+
+  User.updateUser(userId, { nome, email, escolaridade, nivel }, (err, result) => {
+    if (err) return res.status(500).json({ message: 'Erro ao atualizar perfil.' });
+    return res.redirect('/perfil');
+  });
+}

@@ -32,29 +32,37 @@ function listarTestesPorUsuario(usuarioId, callback) {
 }
 
 
-//Arrumar função (IMPORTANTE)
 function buscarDetalhesTeste(testeId, callback) {
+  console.log("Buscar detalhes para id:", testeId);
   const query = `
     SELECT 
-      t.data_realizacao,
+      t.id,
+      t.data,
       t.resultado,
       t.feedback,
       t.transcricao,
       tl.nivel,
       tl.conteudo,
-      tl.erros,
-      t2.titulo
+      u.nome AS nome_usuario
     FROM testes t
     LEFT JOIN textos_leitura tl ON t.textos_leitura_id = tl.id
-    LEFT JOIN textos t2 ON tl.id_texto = t2.id
+    LEFT JOIN usuarios u ON t.usuario_id = u.id
     WHERE t.id = ?
   `;
   db.query(query, [testeId], (err, results) => {
-    if (err) return callback(err);
-    if (results.length === 0) return callback(null, null); // teste não encontrado
+    if (err) {
+      console.error("Erro na consulta detalhes:", err);
+      return callback(err);
+    }
+    if (results.length === 0) {
+      console.log("Nenhum teste encontrado para id:", testeId);
+      return callback(null, null);
+    }
+    console.log("Detalhes do teste encontrados:", results[0]);
     callback(null, results[0]);
   });
 }
+
 export function sortearTextoParaUsuario(userId, callback) {
     db.query('SELECT nivel FROM usuarios WHERE id = ?', [userId], (err, results) => {
         if (err) return callback(err);

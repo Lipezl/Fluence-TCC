@@ -109,12 +109,13 @@ export function historicoUsuario(req, res) {
   });
 }
 
+
 // Detalhes de um teste específico
 export function detalhesTeste(req, res) {
   const testeId = parseInt(req.params.testeId);
   TesteModel.buscarDetalhesTeste(testeId, (err, detalhes) => {
     if (err) return res.status(500).json({ message: 'Erro ao buscar detalhes do teste.' });
     if (!detalhes) return res.status(404).json({ message: 'Teste não encontrado.' });
-    return res.status(200).json({ status: 'ok', detalhes });
+    return res.render('historico', { detalhes });
   });
 }

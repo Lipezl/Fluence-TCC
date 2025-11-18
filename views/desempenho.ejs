@@ -9,9 +9,9 @@
       <p class="text-center">Nenhum teste realizado ainda.</p>
     <% } else { %>
       <% testes.forEach(teste => { %>
-        <div class="list-group-item">
-          Teste ID: <%= teste.id %> Frase: <%=teste.conteudo%> - Data: <%= teste.data.toLocaleDateString() %>
-        </div>
+        <a href="/detalhes/<%= teste.id %>" class="list-group-item list-group-item-action">
+          Teste ID: <%= teste.id %> - Frase: <%= teste.conteudo %> - Data: <%= teste.data.toLocaleDateString() %>
+        </a>
       <% }); %>
     <% } %>
   </div>

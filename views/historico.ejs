@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="/css/styledetalhes.css">
+<body>
+  <div class="main-content">
+    <div class="container mt-5">
+      <h1 class="text-center mb-4" style="color: #da2e2e;">
+        <strong>Nivelamento de <%= detalhes.nome_usuario || 'Usuário' %></strong>
+      </h1>
+
+      <% const isCorreto = detalhes.resultado === 'Correto'; %>
+      <% const containerStyle = (isCorreto
+        ? "background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);"
+        : "background: linear-gradient(135deg, #fce4e4 0%, #f8d7da 100%);"
+      ) + " border-radius: 20px; padding: 40px; margin: 40px auto; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 3px solid " + (isCorreto ? "#28a745" : "#dc3545") + ";" %>
+
+    <div style="<%= containerStyle %>">
+      <h3 style="color: #da2e2e; margin-bottom: 30px; font-weight: bold;">Resultado do Teste</h3>
+      <div style="text-align: left; font-size: 18px; line-height: 1.6;">
+        <p><strong style="color: #333;">Frase:</strong> <%= detalhes.conteudo || '' %></p>
+        <p><strong style="color: #333;">Nível:</strong> <%= detalhes.nivel || '' %></p>
+        <p><strong style="color: #333;">Resultado:</strong> <span style="color: <%= isCorreto ? '#28a745' : '#dc3545' %>; font-weight: bold"><%= detalhes.resultado %></span></p>
+        <p><strong style="color: #333;">Transcrição:</strong> <%= detalhes.transcricao || '' %></p>
+        <p><strong style="color: #333;">Feedback:</strong></p>
+        <pre style="background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); border: 3px solid #e17055; padding: 20px; border-radius: 15px; white-space: pre-wrap; font-weight: bold; color: #d63031; font-family: Arial, sans-serif; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"><%= detalhes.feedback || 'Nenhum feedback' %></pre>
+      </div>
+    </div>
+    </div>
+  </div>
+</body>
+<%- include('partials/footer') %>

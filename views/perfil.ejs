@@ -65,8 +65,7 @@
             <div class="perfil-dado">Nível <%= usuario.nivel || 'Não informado' %></div>
         </div>
         <div class="perfil-actions">
-            <button class="btn btn-primary">Editar Perfil</button>
-            <form action="/perfil/delete?_method=DELETE" method="POST" style="display:inline;">
+            <form action="/perfil/delete" method="POST" style="display:inline;">
                 <button type="submit" class="btn btn-danger ms-2">Excluir Conta</button>
             </form>
             <form action="/logout" method="POST" style="display:inline;">

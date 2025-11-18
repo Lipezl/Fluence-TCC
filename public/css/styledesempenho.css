@@ -1,0 +1,67 @@
+*{
+    font-family: sans-serif;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background-color: #ffdad0;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-link{
+    margin:0 10px;
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+.nav-link:hover{
+    background-color: #ffb3a7;
+    transform: scale(1.25);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.nav-link:active{
+    background-color: #ff8c7a;
+    transform: scale(0.5);
+}
+
+.nav-link:visited{
+    color: #ff4d4d;
+}
+
+.nav-link:focus{
+    outline: none;
+    box-shadow: 0 0 5px #ff4d4d;
+}
+
+#gmail{
+    position: relative;
+    top: 5px;
+}
+
+.footer {
+    flex-shrink: 0;
+    width: 100%;
+    margin-top: 20px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    background: #fff; /* Adicione cor de fundo se necessário */
+    z-index: 100;
+}
+
+.card {
+    margin-bottom: 1.5rem;
+    margin-top: -2rem;
+    padding: 1rem;
+    background: #fff4de; 
+    border: 1px solid #000000; 
+    border-radius: 25px;
+}
+
